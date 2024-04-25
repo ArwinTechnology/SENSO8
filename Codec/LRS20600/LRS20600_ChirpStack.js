@@ -6,7 +6,7 @@
  * 
 */
 
-var lrs20600_events = ['heartbeat/button'];
+var lrs20600_events = ['heartbeat/button', 'rsvd', 'rsvd', 'rsvd', 'rsvd', 'rsvd', 'rsvd', 'rsvd'];
 var trigger_mode = ['unknown', 'NC, falling edge trigger',        'NO, rising edge trigger',
                                'NC, rising/falling edge trigger', 'NO, rising/falling edge trigger'];
 // ChirpStack v4 wrapper

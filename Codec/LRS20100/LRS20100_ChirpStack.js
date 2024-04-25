@@ -6,7 +6,7 @@
  * 
 */
 
-var lrs20100_events = ['heartbeat/button', 'rsvd', 'temperature_high', 'temperature_low', 'humidity_high', 'humidity_low'];
+var lrs20100_events = ['heartbeat/button', 'rsvd', 'temperature_high', 'temperature_low', 'humidity_high', 'humidity_low', 'rsvd', 'rsvd'];
 
 function hex2int16(hex) {
   var dec = hex&0xFFFF;
