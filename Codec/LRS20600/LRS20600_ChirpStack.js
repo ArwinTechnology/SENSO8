@@ -6,8 +6,9 @@
  * 
 */
 
-var lrs20600_events = ['heartbeat'];
-
+var lrs20600_events = ['heartbeat/button'];
+var trigger_mode = ['unknown', 'NC, falling edge trigger',        'NO, rising edge trigger',
+                               'NC, rising/falling edge trigger', 'NO, rising/falling edge trigger'];
 // ChirpStack v4 wrapper
 function decodeUplink(input) {
   var decoded = Decode(input.fPort, input.bytes);
@@ -51,7 +52,7 @@ function Decode(fPort, bytes) {
         case 4: //LRS20600
           return {
             "dataUploadInterval": (bytes[1]<<8|bytes[2]),
-            "triggerMode": bytes[3],
+            "triggerMode": (bytes[3] < 5) ? trigger_mode[bytes[3]] : trigger_mode[0],
             "triggerDeafTime": (bytes[4]<<8|bytes[5])
           };
         default:

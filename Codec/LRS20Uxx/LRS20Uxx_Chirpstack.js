@@ -6,7 +6,7 @@
  * 
 */
 
-var lrs20uxx_events = ['heartbeat', 'rsvd', 'distance_hi', 'distance_lo', 'rsvd', 'rsvd', 'rsvd', 'rsvd']
+var lrs20uxx_events = ['heartbeat/button', 'rsvd', 'distance_hi', 'distance_lo', 'rsvd', 'rsvd', 'rsvd', 'rsvd']
 
 // ChirpStack v4 wrapper
 function decodeUplink(input) {

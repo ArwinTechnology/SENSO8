@@ -97,8 +97,8 @@ function Decode(fPort, bytes, variables) {
       var led = bytes[2] === 1 ? "on" : "off"
       var typ = sensor_type
       var sts = sensor_ok
-      var g1t = gas_sensor_type[bytes[5]];
-      var g2t = gas_sensor_type[bytes[6]]
+      var g1t = bytes[5] < 6 ? gas_sensor_type[bytes[5]] : "unknown";
+      var g2t = bytes[6] < 6 ? gas_sensor_type[bytes[6]] : "unknown";
       return {
         "dataUploadInterval": ult,
         "statusLED": led,
@@ -113,7 +113,7 @@ function Decode(fPort, bytes, variables) {
           var htth = hex2dec(bytes[1]<<8 | bytes[2]);
           var ltth = hex2dec(bytes[3]<<8 | bytes[4]);
           var hhth = bytes[5];
-          var lhth = bytes[5];          
+          var lhth = bytes[6];          
           return {
             "highTemperatureThreshold": htth,
             "lowTemperatureThreshold": ltth,

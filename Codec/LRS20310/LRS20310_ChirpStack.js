@@ -7,7 +7,7 @@
  * 
 */
 
-var lrs20310_events = ['heartbeat', 'rsvd', 'water_leak_alert', 'cable_break_alert'];
+var lrs20310_events = ['heartbeat/button', 'rsvd', 'water_leak_alert', 'cable_break_alert'];
 
 // ChirpStack v4 wrapper
 function decodeUplink(input) {
