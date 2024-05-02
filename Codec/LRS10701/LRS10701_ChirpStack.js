@@ -81,7 +81,7 @@ function Decode(fPort, bytes, variables) {
     case 12: // device settings
       var sensor_type="";
       var sensor_ok="";
-      for (var i=0; i<8; i++) {
+      for (var i=0; i<6; i++) {
         if ((0x01<<i)&bytes[3]) 
           if (sensor_ok==="")
             sensor_type=sensor_list[i];
