@@ -1,4 +1,4 @@
-var lrs20600_events = ['heartbeat'];
+var lrs20600_events = ['heartbeat/button'];
 
 function hex2dec(hex) {
   var dec = hex&0xFFFF;
