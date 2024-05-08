@@ -10,17 +10,17 @@ function hex2dec(hex) {
 }
 
 function decodePhaseData(input, channel, phase) {
-  var evt_amp = input.bytes[1]<<8|input.bytes[2];
-  var pow_pf = input.bytes[3]<<24|input.bytes[4]<<16|input.bytes[5]<<8|input.bytes[6];
-  var evt="";
-  for (let i=0; i<2; i++) {
-    if ((0x01<<i)&(evt_amp>>14)) 
-      if (evt==="")
-        evt=lrs2m001_phase_events[i];
-      else
-        evt=evt+","+lrs2m001_phase_events[i];
-  }
-  if (input.bytes[0] === 0x0a) { 
+  if (input.bytes[0] === 10) { 
+    var evt_amp = input.bytes[1]<<8|input.bytes[2];
+    var pow_pf = input.bytes[3]<<24|input.bytes[4]<<16|input.bytes[5]<<8|input.bytes[6];
+    var evt="";
+    for (let i=0; i<2; i++) {
+      if ((0x01<<i)&(evt_amp>>14)) 
+        if (evt==="")
+          evt=lrs2m001_phase_events[i];
+        else
+          evt=evt+","+lrs2m001_phase_events[i];
+    }
     return {
       data: {
         channel: channel,
@@ -35,7 +35,7 @@ function decodePhaseData(input, channel, phase) {
   }
   else {
     return {
-      error: ['unknown packet type']
+      errors: ['unknown packet type']
     };
   }
 }
@@ -106,19 +106,36 @@ function decodeUplink(input) {
         }
       };
     case 16: // device settings
-      if (input.bytes[0] === 0x0a) {    
+      if (input.bytes[0] === 10) {    
         return {
           data: {
             dataUploadInterval: input.bytes[1]<<8|input.bytes[2],
             underVoltageLimit: input.bytes[3]<<8|input.bytes[4],
             overVoltageLimit: input.bytes[5]<<8|input.bytes[6],
-            overCurrentLimit: input.bytes[7]<<8|input.bytes[8],
+            overCurrentLimit: (input.bytes[7]&0x80)?((input.bytes[7]&0x7F)<<8|input.bytes[8])/10 
+                                                   :  input.bytes[7]      <<8|input.bytes[8],
           }
         };  
       }
       else {
         return {
-          error: ['unknown packet type']
+          errors: ['unknown packet type']
+        };
+      }      
+      break;
+    case 17: // device settings
+      if (input.bytes[0] === 10) {    
+        return {
+          data: {
+            overCurrentLatency: input.bytes[1]<<8|input.bytes[2],
+            normalCurrentLatency: input.bytes[3]<<8|input.bytes[4],
+            uplinkAlertClear: input.bytes[5] ? "enable" : "disable",
+          }
+        };  
+      }
+      else {
+        return {
+          errors: ['unknown packet type']
         };
       }      
       break;
@@ -129,19 +146,29 @@ function decodeUplink(input) {
   }
 }
 
+function isNumber(value) {
+  return typeof value === 'number';
+}
+
 function encodeDownlink(input) {
   var payload = [];
 
   if (input.data.cmd === 'getFirmwareVersion') {
     return {
       fPort: 20,
-      bytes: [0]
+      bytes: [0x00]
     };
   }
   else if (input.data.cmd === 'getDeviceSettings') {
     return {
       fPort: 21,
-      bytes: [0]
+      bytes: [0x0A, 0x00]
+    };
+  }
+  else if (input.data.cmd === 'getLatencySettings') {
+    return {
+      fPort: 21,
+      bytes: [0x0A, 0x01]
     };
   }
   else if (input.data.cmd === 'setDeviceSettings') {
@@ -150,9 +177,30 @@ function encodeDownlink(input) {
     var ovl = input.data.overVoltageLimit;
     var ocl = input.data.overCurrentLimit;
     var dack = 1;
-    return {
-      fPort: 22,
-      bytes: payload.concat(ult>>8,ult&0xff,uvl>>8,uvl&0xff,ovl>>8,ovl&0xff,ocl>>8,ocl&0xff,dack)
-    };
+    if (isNumber(ult) & isNumber(uvl) & isNumber(ovl) & isNumber(ocl)) {
+      return {
+        fPort: 22,
+        bytes: payload.concat(0x0a,
+                              (ult>>8)&0xff,ult&0xff,
+                              (uvl>>8)&0xff,uvl&0xff,
+                              (ovl>>8)&0xff,ovl&0xff,
+                              (ocl>>8)&0xff,ocl&0xff,
+                              dack)
+      };
+    }
+  }
+  else if (input.data.cmd === 'setLatencySettings') {
+    var ocla = input.data.overCurrentLatency;
+    var ncla = input.data.normalCurrentLatency;    
+    var ulrm = input.data.uplinkAlertClear.toLowerCase();
+    if (isNumber(ocla) & isNumber(ncla) & ((ulrm === 'enable') | (ulrm === 'disable'))) {
+      return {
+        fPort: 23,
+        bytes: payload.concat(0x0a,
+                              (ocla>>8)&0xff,ocla&0xff,
+                              (ncla>>8)&0xff,ncla&0xff,
+                              (ulrm === 'enable'))
+      };
+    }
   }
 }
