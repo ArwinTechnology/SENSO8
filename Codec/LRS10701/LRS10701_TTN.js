@@ -21,6 +21,7 @@ function decodeUplink(input) {
             evt=evt+","+lrs10701_events[i];
       }
       var aqi_co2_t = input.bytes[1]<<24|input.bytes[2]<<16|input.bytes[3]<<8|input.bytes[4];
+      var ec_res = input.bytes[10]>>7;
       return {
         data: {
               event: evt,
@@ -28,8 +29,8 @@ function decodeUplink(input) {
               co2: (aqi_co2_t>>10&0x1fff),
               temperature: (hex2dec(aqi_co2_t&0x3ff)-300)/10,
               humidity: input.bytes[5]*0.5,
-              gas1: (input.bytes[6]<<8|input.bytes[7])/1000,
-              gas2: (input.bytes[8]<<8|input.bytes[9])/1000,
+              gas1: ec_res ? (input.bytes[6]<<8|input.bytes[7])/10 : (input.bytes[6]<<8|input.bytes[7])/1000,
+              gas2: ec_res ? (input.bytes[8]<<8|input.bytes[9])/10 : (input.bytes[8]<<8|input.bytes[9])/1000,
               battery: input.bytes[10],
             },
         };
@@ -50,10 +51,11 @@ function decodeUplink(input) {
         }
       };
     case 12: // device settings
+      var sensor_type="";
       var sensor_ok="";
       for (let i=0; i<8; i++) {
         if ((0x01<<i)&input.bytes[3]) 
-          if (sensor_ok==="")
+          if (sensor_type==="")
             sensor_type=sensor_list[i];
           else
             sensor_type=sensor_type+","+sensor_list[i];
@@ -69,8 +71,8 @@ function decodeUplink(input) {
           statusLED: input.bytes[2] === 1 ? "on" : "off",
           sensorType: sensor_type,
           sensorStatus: sensor_ok,
-          gas1Type: gas_sensor_type[input.bytes[5]],
-          gas2Type: gas_sensor_type[input.bytes[6]],
+          gas1Type: input.bytes[5] < 6 ? gas_sensor_type[input.bytes[5]] : "unknown",
+          gas2Type: input.bytes[6] < 6 ? gas_sensor_type[input.bytes[6]] : "unknown",
         }
       };
     case 13: // threshold settings
@@ -99,6 +101,15 @@ function decodeUplink(input) {
               'pm1.0 Threshold': (input.bytes[1]<<16|input.bytes[2]<<8|input.bytes[3]),
               'pm2.5 Threshold': (input.bytes[4]<<16|input.bytes[5]<<8|input.bytes[6]),
               'pm10 Threshold': (input.bytes[7]<<16|input.bytes[8]<<8|input.bytes[9]),
+            }
+          };
+        case 3:
+          return {
+            data: {
+              co2Threshold: (input.bytes[1]<<8|input.bytes[2]),
+              tvocThreshold: (input.bytes[3]<<8|input.bytes[4]),
+              gas1Threshold: (input.bytes[5]<<8|input.bytes[6])/10,
+              gas2Threshold: (input.bytes[7]<<8|input.bytes[8])/10,
             }
           };
         default:
@@ -141,7 +152,7 @@ function encodeDownlink(input) {
     var dack = 1;
     return {
       fPort: 22,
-      bytes: payload.concat(ult>>8,ult&0xff,led,dack)
+      bytes: payload.concat((ult>>8)&0xff,ult&0xff,led,dack)
     };
   }
   else if (input.data.cmd === 'setTHThresholds') {
@@ -151,7 +162,7 @@ function encodeDownlink(input) {
     var lhth = input.data.lowHumidityThreshold;
     return {
       fPort: 23,
-      bytes: payload.concat(0,htth>>8,htth&0xff,ltth>>8,ltth&0xff,hhth,lhth)
+      bytes: payload.concat(0,htth>>8,htth&0xff,ltth>>8,ltth&0xff,hhth&0xff,lhth&0xff)
     };
   }
   else if (input.data.cmd === 'setGasesThresholds') {
@@ -161,7 +172,10 @@ function encodeDownlink(input) {
     var g2th = input.data.gas2Threshold*1000;
     return {
       fPort: 23,
-      bytes: payload.concat(1,co2th>>8,co2th&0xff,tvocth>>8,tvocth&0xff,g1th>>8,g1th&0xff,g2th>>8,g2th&0xff)
+      bytes: payload.concat(1,(co2th >>8)&0xff,co2th &0xff,
+                              (tvocth>>8)&0xff,tvocth&0xff,
+                              (g1th  >>8)&0xff,g1th  &0xff,
+                              (g2th  >>8)&0xff,g2th  &0xff)
     };   
   }
   else if (input.data.cmd === 'setPMThresholds') {
@@ -170,7 +184,22 @@ function encodeDownlink(input) {
     var pm10th = input.data['pm10 Threshold'];
     return {
       fPort: 23,
-      bytes: payload.concat(2,pm1p0th>>16,(pm1p0th>>8)&0xff,pm1p0th&0xff,pm2p5th>>16,(pm2p5th>>8)&0xff,pm2p5th&0xff,pm10th>>16,(pm10th>>8)&0xff,pm10th&0xff)
+      bytes: payload.concat(2,(pm1p0th>>16)&0xff,(pm1p0th>>8)&0xff,pm1p0th&0xff,
+                              (pm2p5th>>16)&0xff,(pm2p5th>>8)&0xff,pm2p5th&0xff,
+                              (pm10th >>16)&0xff,(pm10th >>8)&0xff,pm10th &0xff)
     };
+  }
+  else if (input.data.cmd === 'setHCGasesThresholds') {
+    var co2th = input.data.co2Threshold;
+    var tvocth = input.data.tvocThreshold;
+    var g1th = input.data.gas1Threshold*10;
+    var g2th = input.data.gas2Threshold*10;
+    return {
+      fPort: 23,
+      bytes: payload.concat(3,(co2th >>8)&0xff,co2th &0xff,
+                              (tvocth>>8)&0xff,tvocth&0xff,
+                              (g1th  >>8)&0xff,g1th  &0xff,
+                              (g2th  >>8)&0xff,g2th  &0xff)
+    };   
   }
 }
