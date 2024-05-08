@@ -1,4 +1,6 @@
-var lrs20600_events = ['heartbeat/button'];
+var lrs20600_events = ['heartbeat/button', 'rsvd', 'rsvd', 'rsvd', 'rsvd', 'rsvd', 'rsvd', 'rsvd'];
+var trigger_mode = ['unknown', 'NC, falling edge trigger',        'NO, rising edge trigger',
+                               'NC, rising/falling edge trigger', 'NO, rising/falling edge trigger'];
 
 function hex2dec(hex) {
   var dec = hex&0xFFFF;
@@ -47,7 +49,7 @@ function decodeUplink(input) {
           return {
             data: {
               dataUploadInterval: hex2dec(input.bytes[1]<<8|input.bytes[2]),
-              triggerMode: input.bytes[3],
+              triggerMode: (input.bytes[3] < 5) ? trigger_mode[input.bytes[3]] : trigger_mode[0],
               triggerDeafTime: hex2dec(input.bytes[4]<<8|input.bytes[5]),
             }
           };
