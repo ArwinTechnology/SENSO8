@@ -9,6 +9,10 @@ function hex2dec(hex) {
   return dec;
 }
 
+function isNumber(value) {
+  return typeof value === 'number';
+}
+
 function decodeUplink(input) {
   switch (input.fPort) {
     case 10: // sensor data
@@ -131,29 +135,33 @@ function encodeDownlink(input) {
   if (input.data.cmd === 'getFirmwareVersion') {
     return {
       fPort: 20,
-      bytes: [0]
+      bytes: [0x00]
     };
   }
   else if (input.data.cmd === 'getDeviceSettings') {
     return {
       fPort: 21,
-      bytes: [0]
+      bytes: [0x00]
     };
   }
   else if (input.data.cmd === 'getThresholdSettings') {
     return {
       fPort: 21,
-      bytes: [1]
+      bytes: [0x01]
     } ;   
   }
   else if (input.data.cmd === 'setDeviceSettings') {
     var ult = input.data.dataUploadInterval;
-    var led = input.data.statusLED === 'on'?1:0;
+    var led = input.data.statusLED;
     var dack = 1;
-    return {
-      fPort: 22,
-      bytes: payload.concat((ult>>8)&0xff,ult&0xff,led,dack)
-    };
+    if (isNumber(ult) & ((led === 'on') | (led === 'off'))) {
+      return {
+        fPort: 22,
+        bytes: payload.concat((ult>>8)&0xff,ult&0xff,
+                              (led === 'on'),
+                              dack)
+      };
+    }
   }
   else if (input.data.cmd === 'setTHThresholds') {
     var htth = (input.data.highTemperatureThreshold&0xffff);
@@ -162,7 +170,11 @@ function encodeDownlink(input) {
     var lhth = input.data.lowHumidityThreshold;
     return {
       fPort: 23,
-      bytes: payload.concat(0,htth>>8,htth&0xff,ltth>>8,ltth&0xff,hhth&0xff,lhth&0xff)
+      bytes: payload.concat(0x00,
+                            (htth>>8)&0xff,htth&0xff,
+                            (ltth>>8)&0xff,ltth&0xff,
+                                           hhth&0xff,
+                                           lhth&0xff)
     };
   }
   else if (input.data.cmd === 'setGasesThresholds') {
@@ -172,22 +184,26 @@ function encodeDownlink(input) {
     var g2th = input.data.gas2Threshold*1000;
     return {
       fPort: 23,
-      bytes: payload.concat(1,(co2th >>8)&0xff,co2th &0xff,
-                              (tvocth>>8)&0xff,tvocth&0xff,
-                              (g1th  >>8)&0xff,g1th  &0xff,
-                              (g2th  >>8)&0xff,g2th  &0xff)
+      bytes: payload.concat(0x01,
+                            (co2th >>8)&0xff,co2th &0xff,
+                            (tvocth>>8)&0xff,tvocth&0xff,
+                            (g1th  >>8)&0xff,g1th  &0xff,
+                            (g2th  >>8)&0xff,g2th  &0xff)
     };   
   }
   else if (input.data.cmd === 'setPMThresholds') {
-    var pm1p0th = input.data['pm1.0 Threshold'];
-    var pm2p5th = input.data['pm2.5 Threshold'];
-    var pm10th = input.data['pm10 Threshold'];
-    return {
-      fPort: 23,
-      bytes: payload.concat(2,(pm1p0th>>16)&0xff,(pm1p0th>>8)&0xff,pm1p0th&0xff,
+    var pm1p0th = input.data.pm1p0Threshold;
+    var pm2p5th = input.data.pm2p5Threshold;
+    var pm10th = input.data.pm10Threshold;
+    if (isNumber(pm1p0th) & isNumber(pm2p5th) & isNumber(pm10th)) {
+      return {
+        fPort: 23,
+        bytes: payload.concat(0x02,
+                              (pm1p0th>>16)&0xff,(pm1p0th>>8)&0xff,pm1p0th&0xff,
                               (pm2p5th>>16)&0xff,(pm2p5th>>8)&0xff,pm2p5th&0xff,
                               (pm10th >>16)&0xff,(pm10th >>8)&0xff,pm10th &0xff)
-    };
+      };
+    }
   }
   else if (input.data.cmd === 'setHCGasesThresholds') {
     var co2th = input.data.co2Threshold;
@@ -196,10 +212,11 @@ function encodeDownlink(input) {
     var g2th = input.data.gas2Threshold*10;
     return {
       fPort: 23,
-      bytes: payload.concat(3,(co2th >>8)&0xff,co2th &0xff,
-                              (tvocth>>8)&0xff,tvocth&0xff,
-                              (g1th  >>8)&0xff,g1th  &0xff,
-                              (g2th  >>8)&0xff,g2th  &0xff)
+      bytes: payload.concat(0x03,
+                            (co2th >>8)&0xff,co2th &0xff,
+                            (tvocth>>8)&0xff,tvocth&0xff,
+                            (g1th  >>8)&0xff,g1th  &0xff,
+                            (g2th  >>8)&0xff,g2th  &0xff)
     };   
   }
 }
