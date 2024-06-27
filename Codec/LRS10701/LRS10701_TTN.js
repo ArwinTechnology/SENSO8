@@ -35,7 +35,7 @@ function decodeUplink(input) {
               humidity: input.bytes[5]*0.5,
               gas1: ec_res ? (input.bytes[6]<<8|input.bytes[7])/10 : (input.bytes[6]<<8|input.bytes[7])/1000,
               gas2: ec_res ? (input.bytes[8]<<8|input.bytes[9])/10 : (input.bytes[8]<<8|input.bytes[9])/1000,
-              battery: input.bytes[10],
+              battery: input.bytes[10]&0x7f,
             },
         };
     case 11: // sensor data
