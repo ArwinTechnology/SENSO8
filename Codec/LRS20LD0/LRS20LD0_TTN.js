@@ -1,5 +1,20 @@
 var lrs20ld0_events = ['heartbeat/button', 'rsvd', 'state_alert', 'rsvd', 'rsvd', 'rsvd', 'rsvd', 'rsvd']
 
+function isNumber(value) {
+  return typeof value === 'number';
+}
+
+function isFloat(value) {
+  if (typeof value === 'string') {
+    for (var i = 0; i < value.length; i++) {
+      if (!("0123456789.".includes(value[i]))) {
+         return false;
+      }   
+    }   
+    return true;
+  }
+  return false;
+}
 function decodeUplink(input) {
   switch (input.fPort) {
     case 10: // sensor data
@@ -66,5 +81,57 @@ function decodeUplink(input) {
       return {
         errors: ['unknown fPort'],
       };
+  }
+}
+
+function encodeDownlink(input) {
+  var payload = [];
+
+  if (input.data.cmd === 'getFirmwareVersion') {
+    return {
+      fPort: 20,
+      bytes: [0x00]
+    };
+  }
+  else if (input.data.cmd === 'getDeviceSettings') {
+    return {
+      fPort: 21,
+      bytes: [0x0b, 0x00]
+    };
+  }
+  else if (input.data.cmd === 'getThresholdSettings') {
+    return {
+      fPort: 21,
+      bytes: [0x0b, 0x01]
+    };
+  }
+  else if (input.data.cmd === 'setDeviceSettings') {
+    var ult  = input.data.dataUploadInterval;
+    var dack = 1;
+    if (isNumber(ult)) {
+      return {
+        fPort: 22,
+        bytes: payload.concat(0x0b,
+                              (ult>>8)&0xff,ult&0xff,
+                              dack)
+      }
+    };
+  }
+  else if (input.data.cmd === 'setAlertThresholds') {
+    var distth    = input.data.distanceThreshold;
+    var delta_neg = input.data.distanceNegativeDelta;
+    var delta_pos = input.data.distancePositiveDelta;
+    if (isFloat(distth) & isFloat(delta_neg) & isFloat(delta_pos)) {
+      disth = Math.floor(parseFloat(disth) * 10);
+      delta_neg = Math.floor(parseFloat(delta_neg) * 10);
+      delta_pos = Math.floor(parseFloat(delta_pos) * 10);
+      return {
+        fPort: 23,
+        bytes: payload.concat(0x0b,
+                              (distth   >>8)&0xff,distth   &0xff,
+                              (delta_neg>>8)&0xff,delta_neg&0xff,
+                              (delta_pos>>8)&0xff,delta_pos&0xff)
+      }
+    }
   }
 }

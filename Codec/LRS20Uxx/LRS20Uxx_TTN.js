@@ -1,5 +1,20 @@
 var lrs20uxx_events = ['heartbeat/button', 'rsvd', 'distance_hi', 'distance_lo', 'rsvd', 'rsvd', 'rsvd', 'rsvd']
 
+function isNumber(value) {
+  return typeof value === 'number';
+}
+
+function isFloat(value) {
+  if (typeof value === 'string') {
+    for (var i = 0; i < value.length; i++) {
+      if (!("0123456789.".includes(value[i]))) {
+         return false;
+      }   
+    }   
+    return true;
+  }
+  return false;
+}
 function decodeUplink(input) {
   switch (input.fPort) {
     case 10: // sensor data
@@ -65,5 +80,54 @@ function decodeUplink(input) {
       return {
         errors: ['unknown fPort'],
       };
+  }
+}
+
+function encodeDownlink(input) {
+  var payload = [];
+
+  if (input.data.cmd === 'getFirmwareVersion') {
+    return {
+      fPort: 20,
+      bytes: [0x00]
+    };
+  }
+  else if (input.data.cmd === 'getDeviceSettings') {
+    return {
+      fPort: 21,
+      bytes: [0x0c, 0x00]
+    };
+  }
+  else if (input.data.cmd === 'getThresholdSettings') {
+    return {
+      fPort: 21,
+      bytes: [0x0c, 0x01]
+    };
+  }
+  else if (input.data.cmd === 'setDeviceSettings') {
+    var ult  = input.data.dataUploadInterval;
+    var dack = 1;
+    if (isNumber(ult)) {
+      return {
+        fPort: 22,
+        bytes: payload.concat(0x0c,
+                              (ult>>8)&0xff,ult&0xff,
+                              dack)
+      }
+    };
+  }
+  else if (input.data.cmd === 'setAlertThresholds') {
+    var thhi = input.data.thresholdHi;
+    var thlo = input.data.thresholdLo;
+    if (isFloat(thhi) & isFloat(thlo)) {
+      thhi = Math.floor(parseFloat(thhi) * 10);
+      thlo = Math.floor(parseFloat(thlo) * 10);
+      return {
+        fPort: 23,
+        bytes: payload.concat(0x0c,
+                              (thhi>>8)&0xff,thhi&0xff,
+                              (thlo>>8)&0xff,thlo&0xff)
+      }
+    }
   }
 }

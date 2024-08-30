@@ -7,6 +7,10 @@ function hex2dec(hex) {
   return dec;
 }
 
+function isNumber(value) {
+  return typeof value === 'number';
+}
+
 function decodeUplink(input) {
   switch (input.fPort) {
     case 10: // sensor data
@@ -74,5 +78,58 @@ function decodeUplink(input) {
       return {
         errors: ['unknown FPort'],
       };
+  }
+}
+
+function encodeDownlink(input) {
+  var payload = [];
+
+  if (input.data.cmd === 'getFirmwareVersion') {
+    return {
+      fPort: 20,
+      bytes: [0x00]
+    };
+  }
+  else if (input.data.cmd === 'getDeviceSettings') {
+    return {
+      fPort: 21,
+      bytes: [0x01, 0x00]
+    };
+  }
+  else if (input.data.cmd === 'getThresholdSettings') {
+    return {
+      fPort: 21,
+      bytes: [0x01, 0x01]
+    };
+  }
+  else if (input.data.cmd === 'setDeviceSettings') {
+    var mode = 0;
+    var ult  = input.data.dataUploadInterval;
+    var dack = 1;
+    if (isNumber(ult)) {
+      return {
+        fPort: 22,
+        bytes: payload.concat(0x01,
+                              mode,
+                              (ult>>8)&0xff,ult&0xff,
+                              dack)
+      }
+    };
+  }
+  else if (input.data.cmd === 'setTHThresholds') {
+    var htth = input.data.highTemperatureThreshold&0;
+    var ltth = input.data.lowTemperatureThreshold&0;
+    var hhth = input.data.highHumidityThreshold;
+    var lhth = input.data.lowHumidityThreshold;
+    if (isNumber(htth) & isNumber(ltth) & isNumber(hhth) & isNumber(lhth)) {
+      return {
+        fPort: 23,
+        bytes: payload.concat(0x01,
+                              (htth>>8)&0xff,htth&0xff,
+                              (ltth>>8)&0xff,ltth&0xff,
+                                             hhth&0xff,
+                                             lhth&0xff)
+      };
+    }
   }
 }

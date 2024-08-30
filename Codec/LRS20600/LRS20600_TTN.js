@@ -9,6 +9,10 @@ function hex2dec(hex) {
   return dec;
 }
 
+function isNumber(value) {
+  return typeof value === 'number';
+}
+
 function decodeUplink(input) {
   switch (input.fPort) {
     case 10: // sensor data
@@ -76,5 +80,53 @@ function decodeUplink(input) {
       return {
         errors: ['unknown FPort'],
       };
+  }
+}
+
+function encodeDownlink(input) {
+  var payload = [];
+
+  if (input.data.cmd === 'getFirmwareVersion') {
+    return {
+      fPort: 20,
+      bytes: [0x00]
+    };
+  }
+  else if (input.data.cmd === 'getDeviceSettings') {
+    return {
+      fPort: 21,
+      bytes: [0x04, 0x00]
+    };
+  }
+  else if (input.data.cmd === 'getThresholdSettings') {
+    return {
+      fPort: 21,
+      bytes: [0x04, 0x01]
+    };
+  }
+  else if (input.data.cmd === 'setDeviceSettings') {
+    var ult  = input.data.dataUploadInterval;
+    var mode = input.data.triggerMode;
+    var deaf = input.data.deafTime;
+    var dack = 1;
+    if (isNumber(ult) & isNumber(mode) & isNumber(deaf) & (mode > 0) & (mode < 5)) {
+      return {
+        fPort: 22,
+        bytes: payload.concat(0x04,
+                              mode,
+                              (ult >>8)&0xff,ult &0xff,
+                              (deaf>>8)&0xff,deaf&0xff,
+                              dack)
+      }
+    };
+  }
+  else if (input.data.cmd === 'setInputConfiguration') {
+    var en = input.data.inputEnable;
+    if ((en === 'enable') | (en === 'disable')) {
+      return {
+        fPort: 23,
+        bytes: payload.concat(0x04, (en === 'enable'))
+      }
+    }
   }
 }

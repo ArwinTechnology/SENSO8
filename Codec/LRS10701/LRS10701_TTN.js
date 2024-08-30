@@ -168,28 +168,32 @@ function encodeDownlink(input) {
     var ltth = (input.data.lowTemperatureThreshold&0xffff);
     var hhth = input.data.highHumidityThreshold;
     var lhth = input.data.lowHumidityThreshold;
-    return {
-      fPort: 23,
-      bytes: payload.concat(0x00,
-                            (htth>>8)&0xff,htth&0xff,
-                            (ltth>>8)&0xff,ltth&0xff,
-                                           hhth&0xff,
-                                           lhth&0xff)
-    };
+    if (isNumber(htth) & isNumber(ltth) & isNumber(hhth) & isNumber(lhth)) {
+      return {
+        fPort: 23,
+        bytes: payload.concat(0x00,
+                              (htth>>8)&0xff,htth&0xff,
+                              (ltth>>8)&0xff,ltth&0xff,
+                                            hhth&0xff,
+                                            lhth&0xff)
+      };
+    }
   }
   else if (input.data.cmd === 'setGasesThresholds') {
     var co2th = input.data.co2Threshold;
     var tvocth = input.data.tvocThreshold;
     var g1th = input.data.gas1Threshold*1000;
     var g2th = input.data.gas2Threshold*1000;
-    return {
-      fPort: 23,
-      bytes: payload.concat(0x01,
-                            (co2th >>8)&0xff,co2th &0xff,
-                            (tvocth>>8)&0xff,tvocth&0xff,
-                            (g1th  >>8)&0xff,g1th  &0xff,
-                            (g2th  >>8)&0xff,g2th  &0xff)
-    };   
+    if (isNumber(co2th) & isNumber(tvocth) & isNumber(g1th) & isNumber(g2th)) {
+      return {
+        fPort: 23,
+        bytes: payload.concat(0x01,
+                              (co2th >>8)&0xff,co2th &0xff,
+                              (tvocth>>8)&0xff,tvocth&0xff,
+                              (g1th  >>8)&0xff,g1th  &0xff,
+                              (g2th  >>8)&0xff,g2th  &0xff)
+      };
+    }
   }
   else if (input.data.cmd === 'setPMThresholds') {
     var pm1p0th = input.data.pm1p0Threshold;
@@ -210,13 +214,15 @@ function encodeDownlink(input) {
     var tvocth = input.data.tvocThreshold;
     var g1th = input.data.gas1Threshold*10;
     var g2th = input.data.gas2Threshold*10;
-    return {
-      fPort: 23,
-      bytes: payload.concat(0x03,
-                            (co2th >>8)&0xff,co2th &0xff,
-                            (tvocth>>8)&0xff,tvocth&0xff,
-                            (g1th  >>8)&0xff,g1th  &0xff,
-                            (g2th  >>8)&0xff,g2th  &0xff)
-    };   
+    if (isNumber(co2th) & isNumber(tvocth) & isNumber(g1th) & isNumber(g2th)) {
+      return {
+        fPort: 23,
+        bytes: payload.concat(0x03,
+                              (co2th >>8)&0xff,co2th &0xff,
+                              (tvocth>>8)&0xff,tvocth&0xff,
+                              (g1th  >>8)&0xff,g1th  &0xff,
+                              (g2th  >>8)&0xff,g2th  &0xff)
+      };
+    }
   }
 }
