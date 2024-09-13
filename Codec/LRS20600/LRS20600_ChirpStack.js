@@ -60,7 +60,7 @@ function Decode(fPort, bytes) {
             "error": "unknown sensor type"
           };
       }
-    case 13: // threshold settings
+    case 13: // alert settings
       switch (bytes[0]) {
         case 4: //LRS20600
           var state = bytes[1] ? 'enable': 'disable';
