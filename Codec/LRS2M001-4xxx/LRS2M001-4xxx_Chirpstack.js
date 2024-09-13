@@ -6,7 +6,7 @@
  * 
 */
 
-var lrs2m001_meter_events = ['heartbeat/button', 'bakcup power', 'ph_C_under_V', 'ph_C_over_V', 'ph_B_under_V', 'ph_B_over_V', 'ph_A_under_V', 'ph_A_over_V', 'backup_batt_low'];
+var lrs2m001_meter_events = ['heartbeat/button', 'backup power', 'ph_C_under_V', 'ph_C_over_V', 'ph_B_under_V', 'ph_B_over_V', 'ph_A_under_V', 'ph_A_over_V', 'backup_batt_low'];
 var lrs2m001_phase_events = ['over_current','heartbeat/button'];
 var decoded;
 
