@@ -98,7 +98,7 @@ function encodeDownlink(input) {
       bytes: [0x04, 0x00]
     };
   }
-  else if (input.data.cmd === 'getThresholdSettings') {
+  else if (input.data.cmd === 'getInputSettings') {
     return {
       fPort: 21,
       bytes: [0x04, 0x01]
@@ -109,7 +109,7 @@ function encodeDownlink(input) {
     var mode = input.data.triggerMode;
     var deaf = input.data.deafTime;
     var dack = 1;
-    if (isNumber(ult) & isNumber(mode) & isNumber(deaf) & (mode > 0) & (mode < 5)) {
+    if (isNumber(ult) && isNumber(mode) && isNumber(deaf) && (mode > 0) && (mode < 5)) {
       return {
         fPort: 22,
         bytes: payload.concat(0x04,
@@ -117,7 +117,7 @@ function encodeDownlink(input) {
                               (ult >>8)&0xff,ult &0xff,
                               (deaf>>8)&0xff,deaf&0xff,
                               dack)
-      }
+      };
     };
   }
   else if (input.data.cmd === 'setInputConfiguration') {
@@ -126,7 +126,7 @@ function encodeDownlink(input) {
       return {
         fPort: 23,
         bytes: payload.concat(0x04, (en === 'enable'))
-      }
-    }
+      };
+    };
   }
 }
