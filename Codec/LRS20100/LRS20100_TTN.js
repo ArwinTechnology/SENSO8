@@ -3,7 +3,7 @@ var lrs20100_events = ['heartbeat/button', 'rsvd', 'temperature_high', 'temperat
 function hex2dec(hex) {
   var dec = hex&0xFFFF;
   if (dec & 0x8000)
-    dec = -(0x10000-dec)
+    dec = -(0x10000-dec);
   return dec;
 }
 
@@ -117,11 +117,11 @@ function encodeDownlink(input) {
     };
   }
   else if (input.data.cmd === 'setTHThresholds') {
-    var htth = input.data.highTemperatureThreshold&0;
-    var ltth = input.data.lowTemperatureThreshold&0;
+    var htth = input.data.highTemperatureThreshold;
+    var ltth = input.data.lowTemperatureThreshold;
     var hhth = input.data.highHumidityThreshold;
     var lhth = input.data.lowHumidityThreshold;
-    if (isNumber(htth) & isNumber(ltth) & isNumber(hhth) & isNumber(lhth)) {
+    if (isNumber(htth) && isNumber(ltth) && isNumber(hhth) && isNumber(lhth)) {
       return {
         fPort: 23,
         bytes: payload.concat(0x01,
