@@ -122,7 +122,7 @@ function encodeDownlink(input) {
     var delta_neg = input.data.distanceNegativeDelta;
     var delta_pos = input.data.distancePositiveDelta;
     if (isFloat(distth) & isFloat(delta_neg) & isFloat(delta_pos)) {
-      disth = Math.floor(parseFloat(disth) * 10);
+      distth = Math.floor(parseFloat(distth) * 10);
       delta_neg = Math.floor(parseFloat(delta_neg) * 10);
       delta_pos = Math.floor(parseFloat(delta_pos) * 10);
       return {
