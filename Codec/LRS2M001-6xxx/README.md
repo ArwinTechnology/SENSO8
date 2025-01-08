@@ -280,7 +280,7 @@ Port: 11
 }
 ```
 
-### 11. Dry Contact Output Configuration (Port" 23)
+### 11. Dry Contact Output Configuration (Port: 23)
 
 Configurable Settings:
 
@@ -303,7 +303,7 @@ Response
 ```json
 Port: 10
 {
-  "event"; "heartbeat/button",
+  "event": "heartbeat/button",
   "battery": 100,
   "outputState": "close"
 }
