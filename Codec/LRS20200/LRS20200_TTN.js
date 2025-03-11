@@ -24,13 +24,25 @@ function decodeUplink(input) {
             else
               evt=evt+","+lrs20200_events[i];
           }
-          return {
-            data: {
-              event: evt,
-              battery: input.bytes[2],
-              temperature: hex2dec(input.bytes[3]<<8|input.bytes[4])/10
-            }
-          };
+          if (bytes.length < 9) {
+            return {
+              data: {
+                event: evt,
+                battery: input.bytes[2],
+                temperature: hex2dec(input.bytes[3]<<8|input.bytes[4])/10
+              }
+            };  
+          }
+          else {      // uplink count introduced in 1.06.000
+            return {
+              data: {
+                event: evt,
+                battery: input.bytes[2],
+                temperature: hex2dec(input.bytes[3]<<8|input.bytes[4])/10,
+                uplinkCount: hex2int16(bytes[7]<<8 | bytes[8])
+              }
+            }; 
+          }
         default:
           return {
             errors: ['unknown sensor type']

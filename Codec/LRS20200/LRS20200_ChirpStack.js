@@ -37,11 +37,21 @@ function Decode(fPort, bytes, variables) {
               else
                 evt=evt+","+lrs20200_events[i];
           }
-          return {
-            "event": evt,
-            "battery": bytes[2],
-            "temperature": hex2int16(bytes[3]<<8 | bytes[4])/10
-          };
+          if (bytes.length < 9) {
+            return {
+              "event": evt,
+              "battery": bytes[2],
+              "temperature": hex2int16(bytes[3]<<8 | bytes[4])/10
+            };            
+          }
+          else {      // uplink count introduced in 1.06.000
+            return {
+              "event": evt,
+              "battery": bytes[2],
+              "temperature": hex2int16(bytes[3]<<8 | bytes[4])/10,
+              "uplinkCount": hex2int16(bytes[7]<<8 | bytes[8])
+            };  
+          }
         default:
           return {
             "error": "unknown sensor type"
