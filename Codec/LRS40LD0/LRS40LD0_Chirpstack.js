@@ -46,6 +46,17 @@ function Decode(fPort, bytes, variables) {
       return {
         "firmwareVersion": ver
       };
+    case 9: // device status
+      var ver = bytes[0]+"."+("00"+bytes[1]).slice(-2)+"."+("000"+(bytes[2]<<8|bytes[3])).slice(-3);
+      var battery_level = (bytes[4]<<8 | bytes[5]);
+      var battery_percentage = bytes[6];
+      var uplink_count = bytes[7]<<24 | bytes[8]<< 16 | bytes[9]<<8 | bytes[10];
+      return {
+        "firmwareVersion": ver,
+        "batteryLevel": battery_level,
+        "batteryPercentage": battery_percentage,
+        "uplinkCount": uplink_count
+      };      
     case 12: // device settings
       switch (bytes[0]) {
         case 11: //LRS40LD0
