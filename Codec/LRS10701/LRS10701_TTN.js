@@ -56,9 +56,9 @@ function decodeUplink(input) {
       };
     case 9: // status
       var ver = input.bytes[0]+"."+("00"+input.bytes[1]).slice(-2)+"."+("000"+(input.bytes[2]<<8|input.bytes[3])).slice(-3);    
-      var battery_level = (bytes[4]<<8 | bytes[5]);
-      var battery_percentage = bytes[6];
-      var uplink_count = bytes[7]<<24 | bytes[8]<< 16 | bytes[9]<<8 | bytes[10];
+      var battery_level = (input.bytes[4]<<8 | input.bytes[5]);
+      var battery_percentage = input.bytes[6];
+      var uplink_count = input.bytes[7]<<24 | input.bytes[8]<< 16 | input.bytes[9]<<8 | input.bytes[10];
       return {
         data: {
           firmwareVersion: ver,
