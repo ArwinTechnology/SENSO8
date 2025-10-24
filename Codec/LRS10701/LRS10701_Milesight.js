@@ -2,7 +2,7 @@
  * Copyright 2025 Arwin Technology Limited
  *
  * LRS10701 - indoor air quality sensor payload decoder
- * Miiesight UG65 Network Server
+ * Miiesight Network Server
  * 
 */
 
